@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "943619475617",
+    "project_id": "refind-mvp-81aac",
+    "storage_bucket": "refind-mvp-81aac.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943619475617:android:cdafb2a88c1b64086cc8e0",
+        "android_client_info": {
+          "package_name": "com.example.refind_mvp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAax9I2h8fLnisWxiLdlqraq9zEk7hv_Mc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
