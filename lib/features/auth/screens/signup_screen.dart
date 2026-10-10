@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/utils/ui_helpers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
@@ -55,7 +56,7 @@ class _SignupScreenState extends State<SignupScreen> {
         backgroundColor: AppColors.background,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
+          onPressed: closePage,
         ),
       ),
       body: SafeArea(
@@ -130,10 +131,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           color: AppColors.textMedium,
                         ),
                       ),
-                      TextLinkButton(
-                        label: 'Log in',
-                        onPressed: () => Get.back(),
-                      ),
+                      TextLinkButton(label: 'Log in', onPressed: closePage),
                     ],
                   ),
                 ),

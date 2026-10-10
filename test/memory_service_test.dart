@@ -1,7 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:refind/data/models/memory_model.dart';
-import 'package:refind/data/services/memory_service.dart';
+import 'package:Refind/data/models/memory_model.dart';
+import 'package:Refind/data/services/memory_service.dart';
 
 /// These tests run MemoryService against an in-memory fake Firestore.
 /// They check our own logic (paths, fields, per-user separation).

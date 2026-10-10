@@ -4,10 +4,12 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/ui_helpers.dart';
 import '../../data/models/memory_model.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/memory_card.dart';
 import '../../shared/widgets/sheets_and_dialogs.dart';
+import '../../shared/widgets/state_views.dart';
 import 'memory_details_controller.dart';
 
 class MemoryDetailsScreen extends GetView<MemoryDetailsController> {
@@ -15,13 +17,38 @@ class MemoryDetailsScreen extends GetView<MemoryDetailsController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Obx(() {
-        final memory = controller.memory;
-        // After deleting, the memory disappears for a moment before we leave.
-        if (memory == null) return const SizedBox.shrink();
-        return _content(memory);
-      }),
+    return Obx(() {
+      return PopScope(
+        // Block system Back while deleting/archiving. Otherwise the screen
+        // that finishes the work could close the wrong page.
+        canPop: !controller.isBusy,
+        child: Scaffold(body: _body()),
+      );
+    });
+  }
+
+  Widget _body() {
+    // A deleted memory disappears from the list immediately, so check the
+    // "deleting" flag first and show progress instead of an empty screen.
+    if (controller.isDeleting.value) return const _DeletingView();
+
+    final memory = controller.memory;
+    if (memory == null) return const _NotAvailableView();
+
+    return Stack(
+      children: [
+        _content(memory),
+        if (controller.isArchiving.value)
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: LinearProgressIndicator(
+              color: AppColors.primary,
+              backgroundColor: AppColors.primaryLight,
+            ),
+          ),
+      ],
     );
   }
 
@@ -115,7 +142,7 @@ class MemoryDetailsScreen extends GetView<MemoryDetailsController> {
                 AppIconButton(
                   icon: Icons.arrow_back,
                   tooltip: 'Back',
-                  onPressed: () => Get.back(),
+                  onPressed: closePage,
                 ),
                 const Spacer(),
                 AppIconButton(
@@ -308,34 +335,78 @@ class MemoryDetailsScreen extends GetView<MemoryDetailsController> {
             SheetOption(
               icon: Icons.edit_outlined,
               label: 'Edit',
-              onTap: () {
-                Get.back();
-                controller.edit();
-              },
+              onTap: controller.edit,
             ),
             SheetOption(
               icon: memory.isArchived
                   ? Icons.unarchive_outlined
                   : Icons.archive_outlined,
               label: memory.isArchived ? 'Move back to Library' : 'Archive',
-              onTap: () {
-                Get.back();
-                controller.toggleArchive();
-              },
+              onTap: controller.toggleArchive,
             ),
             SheetOption(
               icon: Icons.delete_outline,
               label: 'Delete',
               color: AppColors.error,
-              onTap: () {
-                Get.back();
-                controller.confirmAndDelete();
-              },
+              onTap: controller.confirmAndDelete,
             ),
             const SizedBox(height: 4),
             const SheetCancelButton(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Shown while a delete is running.
+class _DeletingView extends StatelessWidget {
+  const _DeletingView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const CircularProgressIndicator(color: AppColors.primary),
+          const SizedBox(height: 20),
+          Text('Deleting...', style: AppTheme.text(weight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown if the memory no longer exists (for example it was deleted on
+/// another device) so the user is never left on an empty screen.
+class _NotAvailableView extends StatelessWidget {
+  const _NotAvailableView();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: AppIconButton(
+                icon: Icons.arrow_back,
+                tooltip: 'Back',
+                onPressed: closePage,
+              ),
+            ),
+          ),
+          const Expanded(
+            child: EmptyState(
+              icon: Icons.inventory_2_outlined,
+              title: 'This item is no longer available',
+              message: 'It may have been deleted.',
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:refind/data/models/memory_model.dart';
-import 'package:refind/shared/widgets/memory_card.dart';
-import 'package:refind/shared/widgets/state_views.dart';
+import 'package:Refind/data/models/memory_model.dart';
+import 'package:Refind/shared/widgets/memory_card.dart';
+import 'package:Refind/shared/widgets/state_views.dart';
 
 void main() {
   setUpAll(() {

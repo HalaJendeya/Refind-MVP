@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 import '../../core/utils/ui_helpers.dart';
@@ -88,8 +89,10 @@ class MemoryController extends GetxController {
   }
 
   // ----------------------------------------------------- changing a memory
-  // The Firestore stream above refreshes the screens after each change,
-  // so these methods only need to write and report errors.
+  // The Firestore stream above refreshes the screens after each change.
+  // These methods only write and report ERRORS. The screen that asked for the
+  // change decides where to go next and shows the success message, because
+  // it should only navigate away after the change really worked.
 
   Future<void> toggleFavorite(Memory memory) async {
     try {
@@ -103,18 +106,19 @@ class MemoryController extends GetxController {
     }
   }
 
-  Future<void> toggleArchive(Memory memory) async {
+  /// Returns true if the memory was archived (or moved back to the Library).
+  Future<bool> toggleArchive(Memory memory) async {
     try {
       await _memoryService.setArchived(
         memory.userId,
         memory.id,
         !memory.isArchived,
       );
-      showSuccess(
-        memory.isArchived ? 'Moved back to your Library' : 'Archived',
-      );
-    } catch (_) {
+      return true;
+    } catch (error) {
+      debugPrint('Archiving failed: $error');
       showError('Could not update this item. Please try again.');
+      return false;
     }
   }
 
@@ -122,9 +126,9 @@ class MemoryController extends GetxController {
   Future<bool> deleteMemory(Memory memory) async {
     try {
       await _memoryService.deleteMemory(memory);
-      showSuccess('Deleted');
       return true;
-    } catch (_) {
+    } catch (error) {
+      debugPrint('Deleting failed: $error');
       showError('Could not delete this item. Please try again.');
       return false;
     }
@@ -149,9 +153,9 @@ class MemoryController extends GetxController {
         intent: intent,
         tags: tags,
       );
-      showSuccess('Changes saved');
       return true;
-    } catch (_) {
+    } catch (error) {
+      debugPrint('Saving changes failed: $error');
       showError('Could not save your changes. Please try again.');
       return false;
     }

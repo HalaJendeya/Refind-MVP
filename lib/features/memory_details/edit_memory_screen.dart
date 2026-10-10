@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/utils/ui_helpers.dart';
 import '../../data/models/memory_model.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/screen_header.dart';
@@ -44,13 +45,18 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
 
   Future<void> _save() async {
     final memory = _memory;
-    if (memory == null || _isSaving) return;
+    if (_isSaving) return;
+    if (memory == null) {
+      showError('This item is no longer available.');
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
 
     setState(() => _isSaving = true);
+    var saved = false;
     try {
-      final saved = await _memories.updateMemory(
+      saved = await _memories.updateMemory(
         memory,
         title: _details.title.text.trim(),
         content: _details.note.text.trim(),
@@ -58,37 +64,47 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
         intent: _details.intent,
         tags: _details.tagList,
       );
-      if (saved) Get.back();
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
+
+    // Failed: stay on this screen (the error message was already shown).
+    if (!saved || !mounted) return;
+
+    // Worked: go back to the previous screen, then show the message.
+    closePage();
+    showSuccess('Changes saved');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const ScreenHeader(title: 'Edit Memory', backIcon: Icons.close),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: DetailsForm(data: _details),
+    return PopScope(
+      // Block system Back while saving, so we never close the wrong page.
+      canPop: !_isSaving,
+      child: Scaffold(
+        appBar: const ScreenHeader(title: 'Edit Memory', backIcon: Icons.close),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: _formKey,
+                    child: DetailsForm(data: _details),
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: PrimaryButton(
-                label: 'Save Changes',
-                isLoading: _isSaving,
-                onPressed: _save,
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: PrimaryButton(
+                  label: 'Save Changes',
+                  isLoading: _isSaving,
+                  onPressed: _save,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

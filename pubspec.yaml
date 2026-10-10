@@ -1,4 +1,4 @@
-name: refind_mvp
+name: Refind
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -43,6 +43,7 @@ dependencies:
   url_launcher: ^6.3.3
   google_fonts: ^8.2.1
   intl: ^0.20.3
+  better_share_handler: ^1.1.0
 
 dev_dependencies:
   flutter_test:

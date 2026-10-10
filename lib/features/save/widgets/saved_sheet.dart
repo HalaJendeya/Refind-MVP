@@ -8,13 +8,37 @@ import '../../../shared/widgets/memory_card.dart';
 import '../../../shared/widgets/sheets_and_dialogs.dart';
 
 /// "Saved to your Library" confirmation sheet.
+///
+/// The sheet closes itself first, then runs the callback. The callbacks
+/// only need to switch tabs; they must not close the sheet themselves.
 void showSavedSheet({
   required Memory memory,
   required VoidCallback onViewLibrary,
   required VoidCallback onBackHome,
 }) {
   showAppSheet(
-    AppSheet(
+    _SavedSheet(
+      memory: memory,
+      onViewLibrary: onViewLibrary,
+      onBackHome: onBackHome,
+    ),
+  );
+}
+
+class _SavedSheet extends StatelessWidget {
+  final Memory memory;
+  final VoidCallback onViewLibrary;
+  final VoidCallback onBackHome;
+
+  const _SavedSheet({
+    required this.memory,
+    required this.onViewLibrary,
+    required this.onBackHome,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppSheet(
       child: Column(
         children: [
           Container(
@@ -54,11 +78,23 @@ void showSavedSheet({
             ),
           ),
           const SizedBox(height: 20),
-          PrimaryButton(label: 'View in Library', onPressed: onViewLibrary),
+          PrimaryButton(
+            label: 'View in Library',
+            onPressed: () {
+              closeSheet(context);
+              onViewLibrary();
+            },
+          ),
           const SizedBox(height: 12),
-          SecondaryButton(label: 'Back to Home', onPressed: onBackHome),
+          SecondaryButton(
+            label: 'Back to Home',
+            onPressed: () {
+              closeSheet(context);
+              onBackHome();
+            },
+          ),
         ],
       ),
-    ),
-  );
+    );
+  }
 }

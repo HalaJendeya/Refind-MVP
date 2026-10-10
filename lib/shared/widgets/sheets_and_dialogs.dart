@@ -65,7 +65,28 @@ Future<T?> showAppSheet<T>(Widget sheet) {
   );
 }
 
+/// Closes the sheet that [context] belongs to.
+///
+/// Why not `Get.back()`? In GetX 4.7.3 `Get.back()` only dismisses a visible
+/// snackbar and returns, so the sheet would stay open while a message is on
+/// screen. Popping through the sheet's own context always closes this sheet,
+/// whether or not a snackbar is showing.
+///
+/// Pages are closed with `closePage()`, dialogs with `Navigator.pop(context)`.
+void closeSheet(BuildContext context) {
+  final route = ModalRoute.of(context);
+  if (route == null) return;
+
+  if (route.isCurrent) {
+    Navigator.of(context).pop();
+  } else {
+    // Something else was opened on top; remove only this sheet.
+    Navigator.of(context).removeRoute(route);
+  }
+}
+
 /// One tappable row in a sheet menu (icon + label).
+/// Tapping it closes the sheet first, then runs [onTap].
 class SheetOption extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -86,7 +107,10 @@ class SheetOption extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
+        onTap: () {
+          closeSheet(context);
+          onTap();
+        },
         child: Container(
           height: 56,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -132,43 +156,47 @@ Future<bool> confirmDialog({
   bool isDestructive = false,
 }) async {
   final result = await Get.dialog<bool>(
-    AlertDialog(
-      backgroundColor: AppColors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      title: Text(
-        title,
-        style: AppTheme.text(size: 20, weight: FontWeight.w700),
-      ),
-      content: Text(
-        message,
-        style: AppTheme.text(
-          size: 14,
-          color: AppColors.textMedium,
-          height: 1.5,
+    // Builder gives the buttons the dialog's own context, so they can close
+    // exactly this dialog (Get.back would do nothing while a snackbar shows).
+    Builder(
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          title,
+          style: AppTheme.text(size: 20, weight: FontWeight.w700),
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Get.back(result: false),
-          child: Text(
-            'Cancel',
-            style: AppTheme.text(
-              weight: FontWeight.w600,
-              color: AppColors.textMedium,
-            ),
+        content: Text(
+          message,
+          style: AppTheme.text(
+            size: 14,
+            color: AppColors.textMedium,
+            height: 1.5,
           ),
         ),
-        TextButton(
-          onPressed: () => Get.back(result: true),
-          child: Text(
-            confirmLabel,
-            style: AppTheme.text(
-              weight: FontWeight.w600,
-              color: isDestructive ? AppColors.error : AppColors.primary,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(
+              'Cancel',
+              style: AppTheme.text(
+                weight: FontWeight.w600,
+                color: AppColors.textMedium,
+              ),
             ),
           ),
-        ),
-      ],
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(
+              confirmLabel,
+              style: AppTheme.text(
+                weight: FontWeight.w600,
+                color: isDestructive ? AppColors.error : AppColors.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
     ),
   );
   return result ?? false;
@@ -184,7 +212,7 @@ class SheetCancelButton extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: TextButton(
-        onPressed: () => Get.back(),
+        onPressed: () => closeSheet(context),
         style: TextButton.styleFrom(
           backgroundColor: AppColors.chipBackground,
           shape: RoundedRectangleBorder(

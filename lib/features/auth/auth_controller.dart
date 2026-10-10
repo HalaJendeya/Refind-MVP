@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/utils/ui_helpers.dart';
 import '../../data/services/auth_service.dart';
+import '../../core/services/share_intent_service.dart';
 
 /// Handles login, sign up, password reset and logout.
 /// It lives for the whole app, so any screen can ask who is logged in.
@@ -27,6 +28,7 @@ class AuthController extends GetxController {
   bool get isLoggedIn => _authService.currentUser != null;
 
   String get displayName => user.value?.displayName ?? '';
+
   String get email => user.value?.email ?? '';
 
   Future<void> login(String email, String password) async {
@@ -35,6 +37,12 @@ class AuthController extends GetxController {
     try {
       await _authService.signIn(email, password);
       Get.offAllNamed(AppRoutes.main);
+
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (Get.isRegistered<ShareIntentService>()) {
+        Get.find<ShareIntentService>().openPendingIfLoggedIn();
+      }
     } on AuthException catch (e) {
       showError(e.message);
     } catch (_) {
@@ -50,6 +58,12 @@ class AuthController extends GetxController {
     try {
       await _authService.register(name, email, password);
       Get.offAllNamed(AppRoutes.main);
+
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (Get.isRegistered<ShareIntentService>()) {
+        Get.find<ShareIntentService>().openPendingIfLoggedIn();
+      }
     } on AuthException catch (e) {
       showError(e.message);
     } catch (_) {
@@ -80,14 +94,14 @@ class AuthController extends GetxController {
   Future<void> updateName(String name) async {
     if (isLoading.value) return;
     isLoading.value = true;
+    var updated = false;
     try {
       await _authService.updateDisplayName(name);
       // Re-read the user so the new name shows up everywhere.
       await _authService.currentUser?.reload();
       user.value = _authService.currentUser;
       user.refresh();
-      showSuccess('Profile updated');
-      Get.back();
+      updated = true;
     } on AuthException catch (e) {
       showError(e.message);
     } catch (_) {
@@ -95,15 +109,21 @@ class AuthController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+
+    // Only leave the screen when it really worked. Go back first, then
+    // show the message (see closePage in ui_helpers.dart).
+    if (!updated) return;
+    closePage();
+    showSuccess('Profile updated');
   }
 
   Future<void> changePassword(String current, String newPassword) async {
     if (isLoading.value) return;
     isLoading.value = true;
+    var changed = false;
     try {
       await _authService.changePassword(current, newPassword);
-      showSuccess('Password changed');
-      Get.back();
+      changed = true;
     } on AuthException catch (e) {
       showError(e.message);
     } catch (_) {
@@ -111,6 +131,10 @@ class AuthController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+
+    if (!changed) return;
+    closePage();
+    showSuccess('Password changed');
   }
 
   Future<void> logout() async {

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:refind/core/utils/file_types.dart';
+import 'package:Refind/core/utils/file_types.dart';
 
 void main() {
   group('size limit', () {

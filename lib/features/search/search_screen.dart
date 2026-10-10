@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/utils/ui_helpers.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
@@ -40,7 +41,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Get.back(),
+                    onPressed: closePage,
                   ),
                   Expanded(
                     child: SearchField(

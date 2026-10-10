@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/utils/ui_helpers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
@@ -43,7 +44,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         backgroundColor: AppColors.background,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
+          onPressed: closePage,
         ),
       ),
       body: SafeArea(
@@ -108,7 +109,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           Center(
             child: TextLinkButton(
               label: 'Back to Log In',
-              onPressed: () => Get.back(),
+              onPressed: closePage,
               color: AppColors.textMedium,
             ),
           ),
@@ -138,7 +139,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 28),
-        PrimaryButton(label: 'Back to Log In', onPressed: () => Get.back()),
+        PrimaryButton(label: 'Back to Log In', onPressed: closePage),
         const SizedBox(height: 8),
         Center(
           child: TextLinkButton(

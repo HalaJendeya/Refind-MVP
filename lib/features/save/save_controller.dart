@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 import '../../core/routes/app_routes.dart';
@@ -21,6 +22,10 @@ class SaveController extends GetxController {
 
   /// True while saving. Screens disable the Save button using this.
   final RxBool isSaving = false.obs;
+
+  /// Set once the memory is safely in Firestore. It stops a second tap from
+  /// creating a duplicate if only the confirmation sheet had a problem.
+  Memory? _savedMemory;
 
   String? get _userId => _authService.currentUser?.uid;
 
@@ -86,11 +91,20 @@ class SaveController extends GetxController {
       showError('Please log in to save.');
       return;
     }
+    // Already written to Firestore? Never write it twice. If we are here
+    // again, only the confirmation had a problem, so just try showing it.
+    final alreadySaved = _savedMemory;
+    if (alreadySaved != null) {
+      _showSuccess(alreadySaved);
+      return;
+    }
     if (isSaving.value) return; // stops double taps from saving twice
     isSaving.value = true;
 
+    // Step 1: the real save. Only this step may say "Could not save".
+    Memory? memory;
     try {
-      final memory = await _memoryService.addMemory(
+      memory = await _memoryService.addMemory(
         userId: userId,
         title: title,
         type: type,
@@ -100,28 +114,54 @@ class SaveController extends GetxController {
         intent: intent,
         tags: tags,
       );
-      _showSuccess(memory);
-    } catch (_) {
+    } catch (error) {
+      debugPrint('Saving a memory failed: $error');
       showError('Could not save. Please check your connection and try again.');
     } finally {
       isSaving.value = false;
     }
+    if (memory == null) return;
+
+    // Step 2: the confirmation. The memory is already saved at this point.
+    _savedMemory = memory;
+    _showSuccess(memory);
   }
 
+  /// Goes back to the main screen and shows the "Saved" sheet on top of it.
+  /// A problem here never means the save failed.
   void _showSuccess(Memory memory) {
-    // Go back to the main screen, then show the "Saved" sheet on top of it.
-    Get.until((route) => route.settings.name == AppRoutes.main);
-    showSavedSheet(
-      memory: memory,
-      onViewLibrary: () {
-        Get.back();
-        Get.find<MainController>().changeTab(1);
-      },
-      onBackHome: () {
-        Get.back();
-        Get.find<MainController>().changeTab(0);
-      },
-    );
+    try {
+      _ensureMainScreenIsOpen();
+      showSavedSheet(
+        memory: memory,
+        onViewLibrary: () => _openTab(1),
+        onBackHome: () => _openTab(0),
+      );
+    } catch (error) {
+      debugPrint('Could not show the saved sheet: $error');
+      showSuccess('Saved to your Library.');
+    }
+  }
+
+  /// MainController only exists while the main screen is in the navigation
+  /// stack (see app_pages.dart), so it tells us whether main is there.
+  void _ensureMainScreenIsOpen() {
+    if (Get.isRegistered<MainController>()) {
+      // Normal case: main is underneath. Close everything above it.
+      Get.until((route) => route.settings.name == AppRoutes.main);
+    } else {
+      // Safety net: main is missing, so open it instead of leaving a blank screen.
+      Get.offAllNamed(AppRoutes.main);
+    }
+  }
+
+  /// Called after the saved sheet has closed itself.
+  void _openTab(int index) {
+    if (Get.isRegistered<MainController>()) {
+      Get.find<MainController>().changeTab(index);
+    } else {
+      Get.offAllNamed(AppRoutes.main);
+    }
   }
 
   String _shorten(String text) {

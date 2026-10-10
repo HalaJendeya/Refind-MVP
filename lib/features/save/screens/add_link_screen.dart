@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/utils/ui_helpers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
@@ -30,6 +31,26 @@ class _AddLinkScreenState extends State<AddLinkScreen> {
 
   bool _showDetails = false;
   String _url = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    final arguments = Get.arguments;
+
+    if (arguments is Map && arguments['sharedUrl'] is String) {
+      final sharedUrl = (arguments['sharedUrl'] as String).trim();
+
+      if (sharedUrl.isNotEmpty) {
+        _urlController.text = sharedUrl;
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _generatePreview();
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -68,7 +89,7 @@ class _AddLinkScreenState extends State<AddLinkScreen> {
           if (_showDetails) {
             setState(() => _showDetails = false);
           } else {
-            Get.back();
+            closePage();
           }
         },
       ),

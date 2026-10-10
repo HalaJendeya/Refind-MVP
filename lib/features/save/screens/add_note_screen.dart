@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/utils/ui_helpers.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/app_text_field.dart';
@@ -69,7 +70,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                SecondaryButton(label: 'Cancel', onPressed: () => Get.back()),
+                SecondaryButton(label: 'Cancel', onPressed: closePage),
               ],
             ),
           ),

@@ -41,10 +41,8 @@ Widget _screenOption(IconData icon, String label, String route) {
   return SheetOption(
     icon: icon,
     label: label,
-    onTap: () {
-      Get.back(); // close the sheet
-      Get.toNamed(route);
-    },
+    // SheetOption closes the sheet first, then runs this.
+    onTap: () => Get.toNamed(route),
   );
 }
 
@@ -57,10 +55,7 @@ Widget _comingSoonOption({
   return SheetOption(
     icon: icon,
     label: label,
-    onTap: () {
-      Get.back(); // close the Add Content sheet
-      _showComingSoonSheet(icon: icon, message: message);
-    },
+    onTap: () => _showComingSoonSheet(icon: icon, message: message),
   );
 }
 
@@ -96,7 +91,12 @@ void _showComingSoonSheet({required IconData icon, required String message}) {
             ),
           ),
           const SizedBox(height: 24),
-          PrimaryButton(label: 'Got it', onPressed: () => Get.back()),
+          Builder(
+            builder: (context) => PrimaryButton(
+              label: 'Got it',
+              onPressed: () => closeSheet(context),
+            ),
+          ),
         ],
       ),
     ),

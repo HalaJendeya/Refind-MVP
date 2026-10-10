@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// ReFind Storage rules.
+// Uploaded images/documents live at users/{userId}/memories/{fileName}.
+// Only the owner can read, upload or delete their files.
+// Uploads must be under 10 MB and one of the file types the app supports.
+// (Keep this list in sync with lib/core/utils/file_types.dart.)
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    match /users/{userId}/memories/{fileName} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Delete has no uploaded file to inspect, so it only checks ownership.
+      allow delete: if request.auth != null && request.auth.uid == userId;
+
+      // Upload (create) or replace (update).
+      allow create, update: if request.auth != null
+                            && request.auth.uid == userId
+                            && request.resource.size < 10 * 1024 * 1024
+                            && (
+                              request.resource.contentType.matches('image/.*')
+                              || request.resource.contentType in [
+                                'application/pdf',
+                                'text/plain',
+                                'text/csv',
+                                'application/msword',
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                                'application/vnd.ms-excel',
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/vnd.ms-powerpoint',
+                                'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+                              ]
+                            );
+    }
+
+    // Everything else is closed.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

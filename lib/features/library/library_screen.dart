@@ -150,25 +150,27 @@ class LibraryScreen extends GetView<LibraryController> {
     showAppSheet(
       AppSheet(
         title: 'Sort by',
-        child: Obx(
-          () => Column(
-            children: [
-              for (final option in LibrarySort.values)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    labels[option]!,
-                    style: AppTheme.text(weight: FontWeight.w600),
+        child: Builder(
+          builder: (sheetContext) => Obx(
+            () => Column(
+              children: [
+                for (final option in LibrarySort.values)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      labels[option]!,
+                      style: AppTheme.text(weight: FontWeight.w600),
+                    ),
+                    trailing: controller.sort.value == option
+                        ? const Icon(Icons.check, color: AppColors.primary)
+                        : null,
+                    onTap: () {
+                      controller.sort.value = option;
+                      closeSheet(sheetContext);
+                    },
                   ),
-                  trailing: controller.sort.value == option
-                      ? const Icon(Icons.check, color: AppColors.primary)
-                      : null,
-                  onTap: () {
-                    controller.sort.value = option;
-                    Get.back();
-                  },
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -179,26 +181,33 @@ class LibraryScreen extends GetView<LibraryController> {
     showAppSheet(
       AppSheet(
         title: 'Filter by intent',
-        child: Obx(
-          () => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final intent in memoryIntents)
-                    AppChip(
-                      label: intent,
-                      selected: controller.intentFilter.value == intent,
-                      onTap: () => controller.intentFilter.value =
-                          controller.intentFilter.value == intent ? '' : intent,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              PrimaryButton(label: 'Done', onPressed: () => Get.back()),
-            ],
+        child: Builder(
+          builder: (sheetContext) => Obx(
+            () => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final intent in memoryIntents)
+                      AppChip(
+                        label: intent,
+                        selected: controller.intentFilter.value == intent,
+                        onTap: () => controller.intentFilter.value =
+                            controller.intentFilter.value == intent
+                            ? ''
+                            : intent,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                PrimaryButton(
+                  label: 'Done',
+                  onPressed: () => closeSheet(sheetContext),
+                ),
+              ],
+            ),
           ),
         ),
       ),

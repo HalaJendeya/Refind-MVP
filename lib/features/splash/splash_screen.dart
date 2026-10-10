@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/auth_controller.dart';
 import '../onboarding/onboarding_storage.dart';
+import '../../core/services/share_intent_service.dart';
 
 /// First screen. Shows the logo for a moment, then decides where to go:
 ///   not seen onboarding -> Onboarding
@@ -36,6 +37,11 @@ class _SplashScreenState extends State<SplashScreen> {
       Get.offAllNamed(AppRoutes.onboarding);
     } else {
       Get.offAllNamed(AppRoutes.login);
+    }
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    if (Get.isRegistered<ShareIntentService>()) {
+      Get.find<ShareIntentService>().openPendingIfLoggedIn();
     }
   }
 

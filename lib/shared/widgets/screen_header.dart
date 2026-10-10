@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
+import '../../core/utils/ui_helpers.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -28,7 +28,7 @@ class ScreenHeader extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: AppColors.background,
       leading: IconButton(
         icon: Icon(backIcon, color: AppColors.textDark),
-        onPressed: onBack ?? () => Get.back(),
+        onPressed: onBack ?? closePage,
       ),
       title: Text(
         title,

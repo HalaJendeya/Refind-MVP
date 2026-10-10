@@ -44,6 +44,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return Obx(
+      () => PopScope(
+        // Block system Back while saving, so we never close the wrong page.
+        canPop: !_auth.isLoading.value,
+        child: _buildScaffold(),
+      ),
+    );
+  }
+
+  Widget _buildScaffold() {
     return Scaffold(
       appBar: const ScreenHeader(title: 'Edit Profile'),
       body: SafeArea(
