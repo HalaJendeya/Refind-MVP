@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:refind_mvp/features/save/widgets/add_content_sheet.dart';
+import 'package:refind/features/save/widgets/add_content_sheet.dart';
 
 void main() {
   setUpAll(() {

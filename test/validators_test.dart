@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:refind_mvp/core/utils/validators.dart';
+import 'package:refind/core/utils/validators.dart';
 
 void main() {
   group('Validators.email', () {

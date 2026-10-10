@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:refind_mvp/data/models/memory_model.dart';
+import 'package:refind/data/models/memory_model.dart';
 
 void main() {
   final created = DateTime(2026, 1, 2, 3, 4, 5);
