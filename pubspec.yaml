@@ -69,6 +69,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # The ReFind logo shown inside the app (also the launcher icon source).
+  assets:
+    - assets/icon/launcher_icon.png
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
@@ -103,8 +107,11 @@ flutter:
 # App launcher icon (run: dart run flutter_launcher_icons)
 flutter_launcher_icons:
   android: "launcher_icon"
-  ios: true
-  image_path: "assets/icon/app_icon.png"
+  # iOS icons are left as they are for now (set to true to regenerate them).
+  ios: false
+  # Made from assets/icon/ReFind-icon.jpg: square, logo on the brand background.
+  image_path: "assets/icon/launcher_icon.png"
   remove_alpha_ios: true
-  adaptive_icon_background: "#CB3CE1"
-  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  # Android adaptive icon: brand background + transparent logo layer.
+  adaptive_icon_background: "#FAECFC"
+  adaptive_icon_foreground: "assets/icon/launcher_foreground.png"

@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/auth_controller.dart';
 import '../onboarding/onboarding_storage.dart';
+import '../../shared/widgets/refind_logo.dart';
 import '../../core/services/share_intent_service.dart';
 
 /// First screen. Shows the logo for a moment, then decides where to go:
@@ -60,30 +61,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x33000000),
-                    blurRadius: 24,
-                    offset: Offset(0, 10),
-                  ),
-                ],
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                'R',
-                style: AppTheme.text(
-                  size: 52,
-                  weight: FontWeight.w800,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
+            const ReFindLogo(size: 96, borderRadius: 28, withShadow: true),
             const SizedBox(height: 24),
             Text(
               'ReFind',

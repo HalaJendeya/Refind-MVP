@@ -10,6 +10,7 @@ import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../auth_controller.dart';
 import 'auth_widgets.dart';
+import '../../../shared/widgets/refind_logo.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -49,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                const LogoBadge(),
+                const ReFindLogo(size: 48),
                 const SizedBox(height: 28),
                 Text(
                   'Welcome back',
