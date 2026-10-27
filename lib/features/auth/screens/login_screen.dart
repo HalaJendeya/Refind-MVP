@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/ui_helpers.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/app_text_field.dart';
@@ -97,20 +96,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
                 const OrDivider(),
                 const SizedBox(height: 20),
-                SecondaryButton(
-                  label: 'Continue with Google',
-                  leading: Text(
-                    'G',
-                    style: AppTheme.text(
-                      size: 20,
-                      weight: FontWeight.w700,
-                      color: const Color(0xFF4285F4),
-                    ),
-                  ),
-                  onPressed: () => showInfo(
-                    'Google sign-in is not available in this version yet.',
-                  ),
-                ),
+                Obx(() {
+                  final busy =
+                      _auth.isLoading.value || _auth.isGoogleLoading.value;
+                  return SecondaryButton(
+                    label: 'Continue with Google',
+                    leading: _auth.isGoogleLoading.value
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2.5),
+                          )
+                        : Text(
+                            'G',
+                            style: AppTheme.text(
+                              size: 20,
+                              weight: FontWeight.w700,
+                              color: const Color(0xFF4285F4),
+                            ),
+                          ),
+                    onPressed: busy ? null : _auth.signInWithGoogle,
+                  );
+                }),
                 const SizedBox(height: 32),
                 Center(
                   child: Wrap(

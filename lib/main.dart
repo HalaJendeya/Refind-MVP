@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'core/routes/app_pages.dart';
 import 'core/routes/app_routes.dart';
 import 'core/services/app_binding.dart';
+import 'core/services/fcm_token_service.dart';
 import 'core/services/firebase_service.dart';
 import 'core/theme/app_theme.dart';
 
@@ -18,6 +21,10 @@ Future<void> main() async {
   }
 
   runApp(const ReFindApp());
+
+  // Not awaited: the permission dialog and token request must not hold up
+  // the first frame.
+  unawaited(FcmTokenService.printDeviceToken());
 }
 
 class ReFindApp extends StatelessWidget {

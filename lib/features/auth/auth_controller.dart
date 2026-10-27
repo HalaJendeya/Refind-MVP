@@ -1,12 +1,15 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
 import '../../core/routes/app_routes.dart';
+import '../../core/services/fcm_token_service.dart';
 import '../../core/utils/ui_helpers.dart';
 import '../../data/services/auth_service.dart';
 import '../../core/services/share_intent_service.dart';
 
-/// Handles login, sign up, password reset and logout.
+/// Handles login (email and Google), sign up, password reset and logout.
 /// It lives for the whole app, so any screen can ask who is logged in.
 class AuthController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -17,6 +20,12 @@ class AuthController extends GetxController {
 
   /// True while a request is running. Screens use it to disable buttons.
   final RxBool isLoading = false.obs;
+
+  /// True while Google sign-in is running. Kept apart from [isLoading] so
+  /// the "Log In" button does not spin during a Google login.
+  final RxBool isGoogleLoading = false.obs;
+
+  bool get _isBusy => isLoading.value || isGoogleLoading.value;
 
   @override
   void onInit() {
@@ -32,17 +41,11 @@ class AuthController extends GetxController {
   String get email => user.value?.email ?? '';
 
   Future<void> login(String email, String password) async {
-    if (isLoading.value) return; // ignore double taps
+    if (_isBusy) return; // ignore double taps
     isLoading.value = true;
     try {
       await _authService.signIn(email, password);
-      Get.offAllNamed(AppRoutes.main);
-
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      if (Get.isRegistered<ShareIntentService>()) {
-        Get.find<ShareIntentService>().openPendingIfLoggedIn();
-      }
+      await _openAppAfterLogin();
     } on AuthException catch (e) {
       showError(e.message);
     } catch (_) {
@@ -53,23 +56,49 @@ class AuthController extends GetxController {
   }
 
   Future<void> register(String name, String email, String password) async {
-    if (isLoading.value) return;
+    if (_isBusy) return;
     isLoading.value = true;
     try {
       await _authService.register(name, email, password);
-      Get.offAllNamed(AppRoutes.main);
-
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      if (Get.isRegistered<ShareIntentService>()) {
-        Get.find<ShareIntentService>().openPendingIfLoggedIn();
-      }
+      await _openAppAfterLogin();
     } on AuthException catch (e) {
       showError(e.message);
     } catch (_) {
       showError('Could not create your account. Please try again.');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// A null result means the user closed the Google window, so we simply
+  /// stay on the login screen.
+  Future<void> signInWithGoogle() async {
+    if (_isBusy) return;
+    isGoogleLoading.value = true;
+    try {
+      final result = await _authService.signInWithGoogle();
+      if (result == null) return;
+      await _openAppAfterLogin();
+    } on AuthFailure catch (e) {
+      showError(e.message);
+    } catch (_) {
+      showError('Could not sign in with Google. Please try again.');
+    } finally {
+      isGoogleLoading.value = false;
+    }
+  }
+
+  /// Same navigation for every way of logging in.
+  Future<void> _openAppAfterLogin() async {
+    Get.offAllNamed(AppRoutes.main);
+
+    // A new user may be on this device, so print a fresh FCM token.
+    unawaited(FcmTokenService.printDeviceToken());
+
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    if (Get.isRegistered<ShareIntentService>()) {
+      Get.find<ShareIntentService>().openPendingIfLoggedIn();
     }
   }
 
@@ -140,6 +169,8 @@ class AuthController extends GetxController {
   Future<void> logout() async {
     try {
       await _authService.signOut();
+      // The token belonged to the previous session; drop it.
+      unawaited(FcmTokenService.clearOnLogout());
       Get.offAllNamed(AppRoutes.login);
     } catch (_) {
       showError('Could not log out. Please try again.');
